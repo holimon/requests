@@ -12,6 +12,8 @@ Licensed under the Apache License, Version 2.0 (the "License");
  limitations under the License.
 */
 
+/*Forked by github.com/asmcos/requests
+Modifyed by holimon*/
 package requests
 
 import (
@@ -34,12 +36,15 @@ import (
 
 var VERSION string = "0.8"
 
+var TIMEOUT time.Duration = time.Second * 5
+
 type Request struct {
 	httpreq *http.Request
 	Header  *http.Header
 	Client  *http.Client
 	Debug   int
 	Cookies []*http.Cookie
+	Timeout bool
 }
 
 type Response struct {
@@ -79,6 +84,7 @@ func Requests() *Request {
 
 	req.Client.Jar = jar
 
+	req.Timeout = false
 	return req
 }
 
@@ -86,7 +92,7 @@ func Requests() *Request {
 
 func Get(origurl string, args ...interface{}) (resp *Response, err error) {
 	req := Requests()
-
+	req.Client.Timeout = TIMEOUT
 	// call request Get
 	resp, err = req.Get(origurl, args...)
 	return resp, err
@@ -95,7 +101,9 @@ func Get(origurl string, args ...interface{}) (resp *Response, err error) {
 func (req *Request) Get(origurl string, args ...interface{}) (resp *Response, err error) {
 
 	req.httpreq.Method = "GET"
-
+	if !req.Timeout {
+		req.Client.Timeout = TIMEOUT
+	}
 	// set params ?a=b&b=c
 	//set Header
 	params := []map[string]string{}
@@ -228,8 +236,8 @@ func (req *Request) ClientSetCookies() {
 }
 
 // set timeout s = second
-func (req *Request) SetTimeout(n time.Duration) {
-	req.Client.Timeout = time.Duration(n * time.Second)
+func (req *Request) SetTimeout(timeout time.Duration) {
+	req.Client.Timeout = timeout
 }
 
 
@@ -341,7 +349,7 @@ func (resp *Response) Cookies() (cookies []*http.Cookie) {
 // call req.Post ,only for easy
 func Post(origurl string, args ...interface{}) (resp *Response, err error) {
 	req := Requests()
-
+	req.Client.Timeout = TIMEOUT
 	// call request Get
 	resp, err = req.Post(origurl, args...)
 	return resp, err
@@ -349,7 +357,7 @@ func Post(origurl string, args ...interface{}) (resp *Response, err error) {
 
 func PostJson(origurl string, args ...interface{}) (resp *Response, err error) {
 	req := Requests()
-
+	req.Client.Timeout = TIMEOUT
 	// call request Get
 	resp, err = req.PostJson(origurl, args...)
 	return resp, err
@@ -360,7 +368,9 @@ func PostJson(origurl string, args ...interface{}) (resp *Response, err error) {
 func (req *Request) PostJson(origurl string, args ...interface{}) (resp *Response, err error) {
 
 	req.httpreq.Method = "POST"
-
+	if !req.Timeout {
+		req.Client.Timeout = TIMEOUT
+	}
 	req.Header.Set("Content-Type", "application/json")
 
 	//reset Cookies,
@@ -427,8 +437,10 @@ func (req *Request) PostJson(origurl string, args ...interface{}) (resp *Respons
 func (req *Request) Post(origurl string, args ...interface{}) (resp *Response, err error) {
 
 	req.httpreq.Method = "POST"
-
-    //set default
+	if !req.Timeout {
+		req.Client.Timeout = TIMEOUT
+	}
+	//set default
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	// set params ?a=b&b=c
