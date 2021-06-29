@@ -30,6 +30,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -150,12 +151,11 @@ func (req *Request) Get(origurl string, args ...interface{}) (resp *Response, er
 		return nil, err
 	}
 
-
 	resp = &Response{}
 	resp.R = res
 	resp.req = req
 
-    resp.Content()
+	resp.Content()
 	defer res.Body.Close()
 
 	resp.ResponseDebug()
@@ -240,9 +240,8 @@ func (req *Request) SetTimeout(timeout time.Duration) {
 	req.Client.Timeout = timeout
 }
 
-
-func (req *Request) Close( ) {
-    req.httpreq.Close = true
+func (req *Request) Close() {
+	req.httpreq.Close = true
 }
 
 func (req *Request) Proxy(proxyurl string) {
@@ -282,9 +281,9 @@ func (resp *Response) Content() []byte {
 
 	var err error
 
-    if len(resp.content) > 0{
-        return resp.content
-    }
+	if len(resp.content) > 0 {
+		return resp.content
+	}
 
 	var Body = resp.R.Body
 	if resp.R.Header.Get("Content-Encoding") == "gzip" && resp.req.Header.Get("Accept-Encoding") != "" {
@@ -423,13 +422,12 @@ func (req *Request) PostJson(origurl string, args ...interface{}) (resp *Respons
 		return nil, err
 	}
 
-
 	resp = &Response{}
 	resp.R = res
 	resp.req = req
 
-    resp.Content()
-    defer res.Body.Close()
+	resp.Content()
+	defer res.Body.Close()
 	resp.ResponseDebug()
 	return resp, nil
 }
@@ -508,13 +506,12 @@ func (req *Request) Post(origurl string, args ...interface{}) (resp *Response, e
 		return nil, err
 	}
 
-
 	resp = &Response{}
 	resp.R = res
 	resp.req = req
 
-    resp.Content()
-    defer res.Body.Close()
+	resp.Content()
+	defer res.Body.Close()
 
 	resp.ResponseDebug()
 	return resp, nil
@@ -545,7 +542,7 @@ func (req *Request) buildFilesAndForms(files []map[string]string, datas []map[st
 
 	for _, file := range files {
 		for k, v := range file {
-			part, err := w.CreateFormFile(k, v)
+			part, err := w.CreateFormFile(k, filepath.Base(v))
 			if err != nil {
 				fmt.Printf("Upload %s failed!", v)
 				panic(err)
